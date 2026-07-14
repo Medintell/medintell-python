@@ -101,7 +101,7 @@ class _Resource:
 
     def iterate(self, **query) -> Iterator[dict]:
         """Yield every row, walking pages via the cursor."""
-        cursor = None
+        cursor = ""  # empty cursor = keyset mode from page one
         while True:
             page = self._http.get(self._base, {"limit": 200, "cursor": cursor, **query})
             for row in page.get("data", []):
