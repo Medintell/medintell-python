@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "medintell"
+version = "0.1.0"
+description = "Official Python SDK for the MedIntell REST API."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["medintell", "healthcare", "api", "sdk", "fhir", "his"]
+dependencies = []
+
+[project.urls]
+Documentation = "https://docs.medintell.co/api/sdks"
+
+[tool.hatch.build.targets.wheel]
+packages = ["medintell"]
