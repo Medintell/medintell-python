@@ -11,6 +11,8 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+
+__version__ = "0.1.1"
 import uuid
 from typing import Any, Iterator
 
@@ -47,7 +49,13 @@ class _Http:
                 url += "?" + urllib.parse.urlencode(clean)
 
         data = json.dumps(body).encode() if body is not None else None
-        headers = {"Authorization": f"Bearer {self._api_key}", "Accept": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {self._api_key}",
+            "Accept": "application/json",
+            # Explicit UA — WAFs (e.g. Cloudflare) commonly block the default
+            # Python-urllib/x.y agent outright.
+            "User-Agent": f"medintell-python/{__version__}",
+        }
         if data is not None:
             headers["Content-Type"] = "application/json"
         if method == "POST":
@@ -165,6 +173,9 @@ class _Payers(_Resource):
     def list(self, **query):
         return self._http.get(self._base, query)
 
+    def retrieve(self, payer_id):
+        return self._http.get(f"{self._base}/{payer_id}")
+
     def create(self, *, idempotency_key=None, **body):
         return self._http.post(self._base, body, idempotency_key)
 
@@ -184,6 +195,18 @@ class _Patients(_Resource):
 
     def update(self, patient_id, **body):
         return self._http.put(f"{self._base}/{patient_id}", body)
+
+    def screening_eligibility(self, patient_id):
+        return self._http.get(f"{self._base}/{patient_id}/screening-eligibility")
+
+    def screening_matches(self, patient_id):
+        return self._http.get(f"{self._base}/{patient_id}/screening-matches")
+
+    def vbc_eligibility(self, patient_id):
+        return self._http.get(f"{self._base}/{patient_id}/vbc-eligibility")
+
+    def vbc_enrollments(self, patient_id):
+        return self._http.get(f"{self._base}/{patient_id}/vbc-enrollments")
 
 
 class _Visits(_Resource):
