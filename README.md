@@ -23,14 +23,14 @@ health = mi.health()
 
 # Seed reference data in dependency order, reusing the returned ids
 dept = mi.departments.create(name="Cardiology", facility_id="fac_1B7dQ2")
-doc = mi.doctors.create(name="Dr. Yusuf Ashraf", department_id=dept["id"], facility_id="fac_1B7dQ2")
+doc = mi.doctors.create(name="Dr. Shakshouka Hummusi", department_id=dept["id"], facility_id="fac_1B7dQ2")
 payer = mi.payers.create(name="Falafel Assurance Co.")
 
 patient = mi.patients.create(
     mrn="MRN-2026-00001",
     facility_id="fac_1B7dQ2",
-    first_name="Saleh",
-    last_name="Khateeb",
+    first_name="Kabsa",
+    last_name="Al-Majboos",
     dob="1985-03-15",
     gender="M",
 )
