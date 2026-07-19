@@ -12,7 +12,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 import uuid
 from typing import Any, Iterator
 
@@ -237,6 +237,63 @@ class _Ingest:
         return self._http.get("/api/v1/ingest/schema")
 
 
+class _Analytics:
+    """Analysis Hub — the same aggregates the MedIntell dashboard shows.
+
+    Overviews accept the shared filter set (lists become comma-separated):
+    start_date, end_date, branch_id, department_ids, doctor_ids, genders,
+    age_min, age_max, visit_types, visit_modes, payers, payment_types,
+    marital_statuses, nationalities, smoker, segment_id, mdc_code.
+    Id filters take the numeric ids returned by ``filter_options()``.
+    financial/operational/data_range/filter_options and the two main
+    overviews need an analyst+ credential.
+    """
+
+    def __init__(self, http: _Http):
+        self._http = http
+        self._base = "/api/v1/analytics"
+
+    @staticmethod
+    def _q(query: dict) -> dict:
+        return {
+            k: ",".join(str(x) for x in v) if isinstance(v, (list, tuple)) else v
+            for k, v in query.items()
+            if v is not None
+        }
+
+    def overview(self, **query):
+        """Headline KPIs: visits, patients, revenue, readmission/revisit rates."""
+        return self._http.get(f"{self._base}/overview", self._q(query))
+
+    def clinical(self, **query):
+        """Top ICD categories and chronic disease burden."""
+        return self._http.get(f"{self._base}/clinical/overview", self._q(query))
+
+    def demographics(self, **query):
+        """Gender / nationality / age / BMI distributions (disease_name profiles one condition)."""
+        return self._http.get(f"{self._base}/demographics/overview", self._q(query))
+
+    def financial(self, **query):
+        """Revenue totals, average cost, revenue per patient."""
+        return self._http.get(f"{self._base}/financial/overview", self._q(query))
+
+    def operational(self, **query):
+        """Total visits, unique patients, doctors, departments."""
+        return self._http.get(f"{self._base}/operational/overview", self._q(query))
+
+    def patients(self, **query):
+        """Drill-down patient line list (page/limit, search, risk_level, disease_name)."""
+        return self._http.get(f"{self._base}/patients", self._q(query))
+
+    def data_range(self, **query):
+        """Years/months that actually have visit data — call before picking dates."""
+        return self._http.get(f"{self._base}/data-range", self._q(query))
+
+    def filter_options(self, dimension, **query):
+        """Valid values (with counts) for a filter dimension, e.g. 'department_ids'."""
+        return self._http.get(f"{self._base}/filter-options/{dimension}", self._q(query))
+
+
 class MedIntell:
     """Entry point. ``MedIntell(api_key=...)`` then ``client.<resource>.<action>()``."""
 
@@ -252,6 +309,7 @@ class MedIntell:
         self.patients = _Patients(http, "/api/v1/patients")
         self.visits = _Visits(http, "/api/v1/visits")
         self.ingest = _Ingest(http)
+        self.analytics = _Analytics(http)
 
     def health(self) -> dict:
         """Authenticated connectivity check."""

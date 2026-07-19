@@ -57,6 +57,15 @@ visit = mi.visits.create(
 - **Retries** — `429` / `5xx` / network errors retry with backoff (honours `Retry-After`).
 - **Cursor pagination** — `for patient in mi.patients.iterate(): ...`.
 - **Typed errors** — failures raise `MedIntellError` with `.status`, `.code`, `.request_id`.
+- **Analytics** — the full Analysis Hub: `mi.analytics.overview() / .clinical() / .demographics() / .financial() / .operational() / .patients() / .data_range() / .filter_options(dimension)`. List filters serialize to CSV; discover valid filter values (and numeric ids) with `filter_options()`.
+
+## Analytics
+
+```python
+kpis = mi.analytics.overview(start_date="2026-01-01", end_date="2026-06-30")
+cardio = mi.analytics.filter_options("department_ids", search="cardio")
+burden = mi.analytics.clinical(department_ids=[cardio["data"][0]["value"]], genders=["male"])
+```
 
 ## Pagination
 
