@@ -57,6 +57,7 @@ visit = mi.visits.create(
 - **Retries** — `429` / `5xx` / network errors retry with backoff (honours `Retry-After`).
 - **Cursor pagination** — `for patient in mi.patients.iterate(): ...`.
 - **Typed errors** — failures raise `MedIntellError` with `.status`, `.code`, `.request_id`.
+- **Ingest** — `mi.ingest.patients(batch)` pushes patients → visits → diagnoses in one idempotent call. A visit can also carry `labs` / `radiology` / `procedures` results, and `visit_mode` accepts `VC` (virtual clinic) alongside IP/OP/ER/DC.
 - **Analytics** — the full Analysis Hub: `mi.analytics.overview() / .clinical() / .demographics() / .financial() / .operational() / .patients() / .data_range() / .filter_options(dimension)`. List filters serialize to CSV; discover valid filter values (and numeric ids) with `filter_options()`.
 
 ## Analytics
