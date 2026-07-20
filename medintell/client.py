@@ -12,7 +12,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 import uuid
 from typing import Any, Iterator
 
@@ -334,6 +334,76 @@ class _Analytics:
         )
 
 
+class _Vbc:
+    def __init__(self, http: _Http):
+        self._http = http
+        self._base = "/api/v1/vbc"
+
+    def patient_journeys(self, patient):
+        """All VBC journeys for a patient. patient = pat_… id or 'mrn:<MRN>'."""
+        return self._http.get(f"{self._base}/patients/{patient}/journeys")
+
+    def patient_due(self, patient):
+        """Point-of-care: what this patient owes now, with fill links."""
+        return self._http.get(f"{self._base}/patients/{patient}/due")
+
+    def patient_eligibility(self, patient):
+        return self._http.get(f"{self._base}/patients/{patient}/eligibility")
+
+    def enroll(self, patient, *, program_id, index_date=None):
+        body = {"program_id": program_id}
+        if index_date is not None:
+            body["index_date"] = index_date
+        return self._http.post(f"{self._base}/patients/{patient}/journeys", body)
+
+    def decline(self, journey_id, *, reason=None):
+        return self._http.post(f"{self._base}/journeys/{journey_id}/decline", {"reason": reason})
+
+    def defer_item(self, journey_id, task_id, *, until):
+        return self._http.post(f"{self._base}/journeys/{journey_id}/items/{task_id}/defer", {"until": until})
+
+    def decline_item(self, journey_id, task_id, *, reason=None):
+        return self._http.post(f"{self._base}/journeys/{journey_id}/items/{task_id}/decline", {"reason": reason})
+
+    def worklist(self, **query):
+        return self._http.get(f"{self._base}/journeys/items", query)
+
+    def events(self, **query):
+        return self._http.get(f"{self._base}/events", query)
+
+
+class _Screening:
+    def __init__(self, http: _Http):
+        self._http = http
+        self._base = "/api/v1/screening"
+
+    def patient_statuses(self, patient):
+        """All screening statuses for a patient. patient = pat_… id or 'mrn:<MRN>'."""
+        return self._http.get(f"{self._base}/patients/{patient}/statuses")
+
+    def worklist(self, **query):
+        """Org action list. status=eligible|overdue|notified|completed|declined|deferred."""
+        return self._http.get(f"{self._base}/worklist", query)
+
+    def notified(self, status_id):
+        return self._http.post(f"{self._base}/statuses/{status_id}/notified", {})
+
+    def report(self, status_id, *, completed_on=None):
+        return self._http.post(f"{self._base}/statuses/{status_id}/report", {"completed_on": completed_on})
+
+    def defer(self, status_id, *, until):
+        return self._http.post(f"{self._base}/statuses/{status_id}/defer", {"until": until})
+
+    def decline(self, status_id, *, reason=None):
+        return self._http.post(f"{self._base}/statuses/{status_id}/decline", {"reason": reason})
+
+    def exclude(self, status_id, *, reason=None, until=None):
+        return self._http.post(f"{self._base}/statuses/{status_id}/exclude", {"reason": reason, "until": until})
+
+    def events(self, **query):
+        return self._http.get(f"{self._base}/events", query)
+
+
 class MedIntell:
     """Entry point. ``MedIntell(api_key=...)`` then ``client.<resource>.<action>()``."""
 
@@ -350,6 +420,8 @@ class MedIntell:
         self.visits = _Visits(http, "/api/v1/visits")
         self.ingest = _Ingest(http)
         self.analytics = _Analytics(http)
+        self.vbc = _Vbc(http)
+        self.screening = _Screening(http)
 
     def health(self) -> dict:
         """Authenticated connectivity check."""
