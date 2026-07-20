@@ -368,6 +368,10 @@ class _Vbc:
     def worklist(self, **query):
         return self._http.get(f"{self._base}/journeys/items", query)
 
+    def programs(self, **query):
+        """List the org's VBC programs (discover program ids to enroll into)."""
+        return self._http.get("/api/v1/vbc/programs", query)
+
     def events(self, **query):
         return self._http.get(f"{self._base}/events", query)
 
@@ -399,6 +403,10 @@ class _Screening:
 
     def exclude(self, status_id, *, reason=None, until=None):
         return self._http.post(f"{self._base}/statuses/{status_id}/exclude", {"reason": reason, "until": until})
+
+    def criteria(self, **query):
+        """List the org's screening criteria (discover criteria ids)."""
+        return self._http.get("/api/v1/population-screening/criteria", query)
 
     def events(self, **query):
         return self._http.get(f"{self._base}/events", query)
