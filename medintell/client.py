@@ -12,7 +12,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 import uuid
 from typing import Any, Iterator
 
