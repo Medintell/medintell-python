@@ -12,7 +12,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 import uuid
 from typing import Any, Iterator
 
@@ -292,6 +292,46 @@ class _Analytics:
     def filter_options(self, dimension, **query):
         """Valid values (with counts) for a filter dimension, e.g. 'department_ids'."""
         return self._http.get(f"{self._base}/filter-options/{dimension}", self._q(query))
+
+    _REPORT_PATHS = {
+        "payer": "financial/payer",
+        "payment_type": "financial/payment-type",
+        "revenue_trends": "financial/revenue-trends",
+        "gender": "demographics/gender",
+        "age_group": "demographics/age-group",
+        "nationality": "demographics/nationality",
+        "bmi": "demographics/bmi",
+        "visit_mode": "service/visit-mode",
+        "visit_type": "service/visit-type",
+        "patient_type": "service/patient-type",
+        "appointment_mode": "service/appointment-mode",
+        "registered_at_hospital": "service/registered-at-hospital",
+        "departments": "performance/departments",
+        "physicians": "performance/physicians",
+        "physicians_per_department": "performance/physicians-per-department",
+        "physician_visit_time": "performance/physician-visit-time",
+        "average_los": "utilization/average-los",
+        "average_lov": "utilization/average-lov",
+        "waiting_time": "utilization/waiting-time",
+    }
+
+    def analysis(self, report, **query):
+        """Run any Analysis Hub report — returns {items, stats}.
+
+        bmi, physicians_per_department, average_los, average_lov and
+        waiting_time need an analyst+ credential.
+        """
+        path = self._REPORT_PATHS.get(report)
+        if path is None:
+            raise MedIntellError(f"unknown analysis report: {report}")
+        return self._http.get(f"{self._base}/{path}", self._q(query))
+
+    def disease_prevalence(self, *, disease_name, **query):
+        """Disease prevalence vs city/national estimates."""
+        return self._http.get(
+            f"{self._base}/clinical/disease-prevalence-analysis",
+            self._q({"disease_name": disease_name, **query}),
+        )
 
 
 class MedIntell:
